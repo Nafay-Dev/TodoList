@@ -7,12 +7,36 @@ interface TodoProps {
     id: string;
     text: string;
     completed: boolean;
+    dueDate: Date | null;
   };
   toggleComplete: (id: string) => void;
   deleteItem: (id: string) => void;
 }
 
 const Todo: React.FC<TodoProps> = ({ item, toggleComplete, deleteItem }) => {
+  const formatDate = (date: Date | null) => {
+    if (!date) return null;
+    return date.toLocaleDateString();
+  };
+
+  const getTimeRemaining = (dueDate: Date | null) => {
+    if (!dueDate) return null;
+    
+    const now = new Date();
+    const diffTime = dueDate.getTime() - now.getTime();
+    
+    if (diffTime <= 0) return "Overdue";
+    
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return "Due today";
+    if (diffDays === 1) return "Due tomorrow";
+    return `${diffDays} days left`;
+  };
+
+  const timeRemaining = getTimeRemaining(item.dueDate);
+  const isOverdue = timeRemaining === "Overdue" && !item.completed;
+
   return (
     <View style={styles.todoItem}>
       <TouchableOpacity 
@@ -26,12 +50,26 @@ const Todo: React.FC<TodoProps> = ({ item, toggleComplete, deleteItem }) => {
         />
       </TouchableOpacity>
       
-      <Text style={[
-        styles.todoText,
-        item.completed && styles.completedText
-      ]}>
-        {item.text}
-      </Text>
+      <View style={styles.textContainer}>
+        <Text style={[
+          styles.todoText,
+          item.completed && styles.completedText
+        ]}>
+          {item.text}
+        </Text>
+        
+        {item.dueDate && (
+          <View style={styles.dateContainer}>
+            <Text style={[
+              styles.dateText,
+              isOverdue && styles.overdueText,
+              item.completed && styles.completedDateText
+            ]}>
+              {formatDate(item.dueDate)} • {timeRemaining}
+            </Text>
+          </View>
+        )}
+      </View>
       
       <TouchableOpacity 
         style={styles.deleteButton}
@@ -60,14 +98,31 @@ const styles = StyleSheet.create({
   checkContainer: {
     marginRight: 12,
   },
-  todoText: {
+  textContainer: {
     flex: 1,
+  },
+  todoText: {
     fontSize: 16,
     color: '#212121',
   },
   completedText: {
     textDecorationLine: 'line-through',
     color: '#9E9E9E',
+  },
+  dateContainer: {
+    marginTop: 4,
+  },
+  dateText: {
+    fontSize: 12,
+    color: '#757575',
+  },
+  overdueText: {
+    color: '#FF5252',
+    fontWeight: 'bold',
+  },
+  completedDateText: {
+    color: '#9E9E9E',
+    textDecorationLine: 'line-through',
   },
   deleteButton: {
     padding: 4,

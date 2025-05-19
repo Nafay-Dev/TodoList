@@ -15,18 +15,20 @@ interface TodoItem {
   id: string;
   text: string;
   completed: boolean;
+  dueDate: Date | null;
 }
 
 const TodoList: React.FC = () => {
   const [todos, setTodos] = useState<TodoItem[]>([]);
 
   // Add a new todo
-  const addTodo = (text: string) => {
+  const addTodo = (text: string, dueDate: Date | null = null) => {
     setTodos(prevTodos => [
       {
         id: generateUUID(),
         text,
-        completed: false
+        completed: false,
+        dueDate
       },
       ...prevTodos
     ]);
